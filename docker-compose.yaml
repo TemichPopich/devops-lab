@@ -1,0 +1,69 @@
+services:
+  app:
+    container_name: app
+    depends_on:
+      postgres:
+        condition: service_healthy
+    env_file:
+      - .env
+    environment:
+      DB_HOST: postgres
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - ${APP_PORT}:${APP_PORT}
+    networks:
+      - devops-lab-network
+
+  postgres:
+    container_name: postgres
+    image: postgres:16
+    restart: always
+    env_file:
+      - .env
+    environment:
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - devops-lab-db-data:/var/lib/postgresql/data
+    networks:
+      - devops-lab-network
+    ports:
+      - ${DB_PORT}:${DB_PORT}
+    healthcheck:
+      test: [ "CMD-SHELL", "sh -c 'pg_isready -U $${DB_USER} -d $${DB_NAME}'" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  prometheus:
+    container_name: prometheus
+    image: prom/prometheus
+    ports:
+      - 9090:9090
+    volumes:
+      - ./config/prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./prometheus:/prometheus
+    networks:
+      - devops-lab-network
+
+  grafana:
+    container_name: grafana
+    ports:
+      - 3000:3000
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    build:
+      context: ./docker/grafana/
+      dockerfile: Dockerfile
+    networks:
+      - devops-lab-network
+
+volumes:
+  devops-lab-db-data:
+
+networks:
+  devops-lab-network:

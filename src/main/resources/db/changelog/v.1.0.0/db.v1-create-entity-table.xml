@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<databaseChangeLog
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd">
+
+    <changeSet id="v1-1" author="popich">
+        <sql>
+            CREATE TABLE IF NOT EXISTS APPLICATION_ENTITY
+            (
+                ID          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                NAME        VARCHAR(255) NOT NULL UNIQUE,
+                DESCRIPTION TEXT,
+                TYPE        VARCHAR(50)  NOT NULL
+            );
+
+
+            ALTER TABLE application_entity
+                ADD CONSTRAINT chk_application_entity_type
+                    CHECK (TYPE IN ('TYPE1', 'TYPE2', 'TYPE3'));
+        </sql>
+        <rollback>
+            DROP TABLE IF EXISTS APPLICATION_ENTITY CASCADE;
+        </rollback>
+    </changeSet>
+
+</databaseChangeLog>
