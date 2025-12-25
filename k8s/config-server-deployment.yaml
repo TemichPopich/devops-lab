@@ -1,0 +1,48 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: devops-lab-server
+  labels:
+    name: devops-lab-app
+spec:
+  selector:
+    matchLabels:
+      name: devops-lab-app
+  template:
+    metadata:
+      labels:
+        name: devops-lab-app
+    spec:
+      containers:
+        - name: devops-lab-app
+          image: devops-lab-app:latest
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 8080
+          env:
+            - name: APP_PORT
+              value: "8080"
+            - name: DB_HOST
+              value: "postgres"
+            - name: DB_PORT
+              value: "5432"
+            - name: DB_NAME
+              value: "devops_lab_db"
+            - name: DB_USER
+              value: "popich"
+            - name: DB_PASSWORD
+              value: "9d4iVgX5"
+            - name: SPRING_CONFIG_IMPORT
+              value: ""
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: devops-lab-server-svc
+spec:
+  type: NodePort
+  ports:
+    - port: 8080
+      name: http
+  selector:
+    name: devops-lab-app
